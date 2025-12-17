@@ -1,0 +1,11 @@
+id,company_name,contact_name,email,phone,address,city,state,zip_code,industry,revenue,employee_count,deal_stage,owner,close_date
+1001,Acme Corp,John Doe,j.doe@acme.com,555-0100,123 Main St,New York,NY,10001,Manufacturing,1000000,50,Closed Won,Alice Smith,2023-01-15
+1002,TechStream Inc.,Jane Smith,jane.s@techstream.io,,456 Tech Blvd,San Francisco,California,94105,Technology,,120,Negotiation,Bob Jones,
+1003,Acme Corporation,Johnny Doe,j.doe@acme.com,555-0100,123 Main Street,NYC,NY,10001,,1000000,50,Closed Won,Alice S.,2023-01-15
+1004,Global Logistics,Mike Brown,mike.b@globallog.com,555-0123,,Chicago,IL,60601,Logistics,500000,20,Proposal,,2023-03-20
+1005,,Sarah Lee,sarah@startup.com,,789 Pine Ln,Austin,TX,73301,Technology,0,5,Discovery,Bob Jones,2023-06-10
+1006,BlueSky Finance,Tom Wilson,,555-9999,101 Wall St,New York,NY,10005,Finance,5000000,200,Closed Lost,Alice Smith,2022-12-01
+1007,TechStream Inc,Jane Smith,jane.s@techstream.io,555-8888,456 Tech Blvd,San Fran,CA,94105,Technology,2000000,120,Negotiation,Bob Jones,2023-05-15
+1008,Retail Giants,,contact@retailgiants.com,555-7777,,Miami,FL,33101,Retail,10000000,500,Qualified,Charlie Day,
+1009,Small Biz LLC,Unknown,,555-1111,,Seattle,WA,98101,,50000,3,Lead,Alice Smith,
+1010,Global Logistics LLC,Michael Brown,m.brown@globallog.com,555-0123,888 Lake Dr,Chicago,Illinois,60601,Logistics,550000,25,Proposal,David Lee,2023-03-21
