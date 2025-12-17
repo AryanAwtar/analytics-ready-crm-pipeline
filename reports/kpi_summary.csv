@@ -1,0 +1,8 @@
+segment,deal_stage,total_revenue,avg_score,count
+Enterprise,Closed Lost,5000000.0,60.0,1
+Enterprise,Qualified,10000000.0,90.0,1
+Mid-Market,Closed Won,2000000.0,80.0,2
+Mid-Market,Negotiation,2000000.0,110.0,1
+SMB,Lead,50000.0,25.0,1
+SMB,Proposal,1050000.0,60.0,2
+Unknown,Discovery,0.0,20.0,1

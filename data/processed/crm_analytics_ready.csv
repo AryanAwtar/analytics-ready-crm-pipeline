@@ -1,0 +1,10 @@
+id,company_name,contact_name,email,phone,address,city,state,zip_code,industry,revenue,employee_count,deal_stage,owner,close_date,region,original_company_name,segment,lead_score
+1001,Acme Corp,John Doe,j.doe@acme.com,555-0100,123 Main St,New York,Ny,10001,Manufacturing,1000000.0,50,Closed Won,Alice Smith,2023-01-15,Other,Acme Corp,Mid-Market,80.0
+1003,Acme Corporation,Johnny Doe,j.doe@acme.com,555-0100,123 Main Street,Nyc,Ny,10001,Corporate,1000000.0,50,Closed Won,Alice S.,2023-01-15,Other,Acme Corporation,Mid-Market,80.0
+1006,Bluesky Finance,Tom Wilson,,555-9999,101 Wall St,New York,Ny,10005,Finance,5000000.0,200,Closed Lost,Alice Smith,2022-12-01,Other,Bluesky Finance,Enterprise,60.0
+1010,Global Logistics Llc,Michael Brown,m.brown@globallog.com,555-0123,888 Lake Dr,Chicago,IL,60601,Logistics,550000.0,25,Proposal,David Lee,2023-03-21,Midwest,Global Logistics Llc,SMB,60.0
+1004,Global Logistics Llc,Mike Brown,mike.b@globallog.com,555-0123,,Chicago,Il,60601,Logistics,500000.0,20,Proposal,Unassigned,2023-03-20,Other,Global Logistics,SMB,60.0
+1008,Retail Giants,Nan,contact@retailgiants.com,555-7777,,Miami,Fl,33101,Retail,10000000.0,500,Qualified,Charlie Day,,Other,Retail Giants,Enterprise,90.0
+1009,Small Biz Llc,Unknown,,555-1111,,Seattle,Wa,98101,Other,50000.0,3,Lead,Alice Smith,,Other,Small Biz Llc,SMB,25.0
+1007,Techstream Inc.,Jane Smith,jane.s@techstream.io,555-8888,456 Tech Blvd,San Fran,Ca,94105,Technology,2000000.0,120,Negotiation,Bob Jones,2023-05-15,Other,Techstream Inc,Mid-Market,110.0
+1005,Unknown Entity,Sarah Lee,sarah@startup.com,,789 Pine Ln,Austin,Tx,73301,Technology,0.0,5,Discovery,Bob Jones,2023-06-10,Other,Unknown Entity,Unknown,20.0

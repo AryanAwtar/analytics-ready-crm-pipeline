@@ -1,0 +1,40 @@
+{
+    "timestamp": "2025-12-17T13:58:54.402225",
+    "stages": [
+        {
+            "stage": "Ingestion",
+            "row_count": 10,
+            "column_count": 15,
+            "missing_values_total": 16,
+            "total_pipeline_value": 20100000.0
+        },
+        {
+            "stage": "Cleaning",
+            "row_count": 10,
+            "column_count": 15,
+            "missing_values_total": 10,
+            "total_pipeline_value": 20100000.0
+        },
+        {
+            "stage": "Enrichment",
+            "row_count": 10,
+            "column_count": 16,
+            "missing_values_total": 10,
+            "total_pipeline_value": 20100000.0
+        },
+        {
+            "stage": "Entity Resolution",
+            "row_count": 9,
+            "column_count": 17,
+            "missing_values_total": 8,
+            "total_pipeline_value": 20100000.0
+        },
+        {
+            "stage": "Pricing & Scoring",
+            "row_count": 9,
+            "column_count": 19,
+            "missing_values_total": 8,
+            "total_pipeline_value": 20100000.0
+        }
+    ]
+}
