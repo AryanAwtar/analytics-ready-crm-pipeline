@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Pipeline Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Enterprise CRM Pipeline</h1>
+            <p class="text-gray-600 mt-2">Upload raw CRM data to clean, enrich, and analyze.</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8 max-w-xl mx-auto text-center">
+            <label class="block mb-4 text-sm font-medium text-gray-900">Upload Raw CSV</label>
+            <input type="file" id="fileInput" accept=".csv" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2">
+            <button onclick="runPipeline()" id="uploadBtn" class="mt-4 px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition w-full">
+                Run Pipeline
+            </button>
+            <div id="loading" class="hidden mt-4 text-blue-600 font-medium animate-pulse">Processing Pipeline...</div>
+            <div class="mt-4 text-xs text-gray-400">
+                Requires backend running at <span class="font-mono">http://127.0.0.1:8000</span>
+            </div>
+        </div>
+
+        <!-- Results Section (Hidden by default) -->
+        <div id="resultsArea" class="hidden space-y-8">
+            
+            <!-- Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="metricsCards">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- KPI Summary Table -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Segment KPI Summary</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Segment</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Revenue</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Lead Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kpiTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pipeline Logs -->
+            <div class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm h-64 overflow-y-auto">
+                <h3 class="text-white font-bold mb-2 border-b border-gray-700 pb-2">Pipeline Execution Logs</h3>
+                <div id="logsArea"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        async function runPipeline() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert("Please select a file first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // UI States
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('resultsArea').classList.add('hidden');
+
+            try {
+                // Using API_URL constant for better manageability
+                const response = await fetch(`${API_URL}/upload-and-process`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    displayResults(data);
+                } else {
+                    throw new Error(data.message || data.detail || "Unknown error occurred");
+                }
+
+            } catch (error) {
+                console.warn('Backend connection failed:', error);
+                
+                // Fallback Logic: Check if we are in a secure/preview environment which often blocks localhost
+                const isSecureContext = window.location.protocol === 'https:' || window.location.protocol.includes('blob');
+                
+                if (isSecureContext) {
+                    alert("⚠️ PREVIEW MODE: Cannot connect to local backend from this secure preview.\n\nShowing DEMO DATA instead to demonstrate functionality.\n\nTo run the actual pipeline:\n1. Ensure 'python src/api.py' is running\n2. Open this 'frontend/index.html' file directly in your browser (file://)");
+                    displayResults(getMockData());
+                } else {
+                    alert(`Failed to connect to backend at ${API_URL}.\n\nPlease ensure 'python src/api.py' is running in your terminal.`);
+                }
+            } finally {
+                document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('resultsArea').classList.remove('hidden');
+            
+            // 1. Logs
+            const stages = data.pipeline_metrics.stages;
+            const logsHtml = stages.map(stage => 
+                `<div>[${stage.stage}] Processed ${stage.row_count} rows. Missing values: ${stage.missing_values_total}</div>`
+            ).join('');
+            document.getElementById('logsArea').innerHTML = logsHtml;
+
+            // 2. KPI Table
+            const kpiHtml = data.kpi_summary.map(row => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">${row.segment}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${row.deal_stage}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-bold">${row.count}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-green-600">$${row.total_revenue.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${row.avg_score.toFixed(1)}</td>
+                </tr>
+            `).join('');
+            document.getElementById('kpiTableBody').innerHTML = kpiHtml;
+        }
+
+        function getMockData() {
+             return {
+                pipeline_metrics: {
+                    stages: [
+                        { stage: "Ingestion", row_count: 150, missing_values_total: 12 },
+                        { stage: "Cleaning", row_count: 145, missing_values_total: 0 },
+                        { stage: "Enrichment", row_count: 145, missing_values_total: 0 },
+                        { stage: "Entity Resolution", row_count: 130, missing_values_total: 0 },
+                        { stage: "Pricing & Scoring", row_count: 130, missing_values_total: 0 }
+                    ]
+                },
+                kpi_summary: [
+                    { segment: "Enterprise", deal_stage: "Closed Won", count: 12, total_revenue: 15500000, avg_score: 88.5 },
+                    { segment: "Mid-Market", deal_stage: "Negotiation", count: 25, total_revenue: 5200000, avg_score: 62.0 },
+                    { segment: "SMB", deal_stage: "Prospecting", count: 45, total_revenue: 450000, avg_score: 41.5 },
+                    { segment: "Enterprise", deal_stage: "Proposal", count: 8, total_revenue: 8000000, avg_score: 75.0 }
+                ]
+            };
+        }
+    </script>
+</body>
+</html>
