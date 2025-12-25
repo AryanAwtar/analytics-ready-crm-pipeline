@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Pipeline Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
@@ -16,15 +18,27 @@
         </header>
 
         <!-- Upload Section -->
-        <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8 max-w-xl mx-auto text-center">
-            <label class="block mb-4 text-sm font-medium text-gray-900">Upload Raw CSV</label>
-            <input type="file" id="fileInput" accept=".csv" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2">
-            <button onclick="runPipeline()" id="uploadBtn" class="mt-4 px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition w-full">
-                Run Pipeline
-            </button>
-            <div id="loading" class="hidden mt-4 text-blue-600 font-medium animate-pulse">Processing Pipeline...</div>
-            <div class="mt-4 text-xs text-gray-400">
-                Requires backend running at <span class="font-mono">http://127.0.0.1:8000</span>
+        <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8 max-w-xl mx-auto">
+            
+            <!-- Template Download Button -->
+            <div class="flex justify-end mb-2">
+                <button onclick="downloadTemplate()" class="flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline transition">
+                    <i data-lucide="download" class="w-4 h-4 mr-1"></i> Download CSV Template
+                </button>
+            </div>
+
+            <div class="text-center">
+                <label class="block mb-4 text-sm font-medium text-gray-900">Upload Raw CSV</label>
+                <input type="file" id="fileInput" accept=".csv" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2">
+                
+                <button onclick="runPipeline()" id="uploadBtn" class="mt-4 px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition w-full flex justify-center items-center">
+                    Run Pipeline
+                </button>
+                
+                <div id="loading" class="hidden mt-4 text-blue-600 font-medium animate-pulse">Processing Pipeline...</div>
+                <div class="mt-4 text-xs text-gray-400">
+                    Requires backend running at <span class="font-mono">http://127.0.0.1:8000</span>
+                </div>
             </div>
         </div>
 
@@ -67,7 +81,38 @@
     </div>
 
     <script>
+        // Initialize Icons
+        lucide.createIcons();
+
         const API_URL = "http://127.0.0.1:8000";
+
+        function downloadTemplate() {
+            // Define the standard headers needed for the pipeline
+            const headers = [
+                "id", "company_name", "contact_name", "email", "phone", 
+                "address", "city", "state", "zip_code", "industry", 
+                "revenue", "employee_count", "deal_stage", "owner", "close_date"
+            ];
+            
+            // Add a sample row to help users understand format
+            const sampleRow = [
+                "1001", "Acme Corp", "John Doe", "john@acme.com", "555-0123",
+                "123 Main St", "New York", "NY", "10001", "Technology",
+                "1000000", "50", "Closed Won", "Alice Smith", "2023-01-15"
+            ];
+
+            const csvContent = [headers.join(","), sampleRow.join(",")].join("\n");
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'crm_data_template.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
 
         async function runPipeline() {
             const fileInput = document.getElementById('fileInput');
@@ -87,7 +132,6 @@
             document.getElementById('resultsArea').classList.add('hidden');
 
             try {
-                // Using API_URL constant for better manageability
                 const response = await fetch(`${API_URL}/upload-and-process`, {
                     method: 'POST',
                     body: formData
@@ -104,7 +148,6 @@
             } catch (error) {
                 console.warn('Backend connection failed:', error);
                 
-                // User-friendly fallback: Offer demo data if backend is unreachable
                 const useDemo = confirm(`⚠️ Connection Failed\n\nCould not reach the backend at ${API_URL}.\n\nWould you like to load DEMO DATA to see how the dashboard works?`);
                 
                 if (useDemo) {
@@ -132,8 +175,8 @@
                     <td class="px-6 py-4 whitespace-nowrap">${row.segment}</td>
                     <td class="px-6 py-4 whitespace-nowrap">${row.deal_stage}</td>
                     <td class="px-6 py-4 whitespace-nowrap font-bold">${row.count}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600">$${row.total_revenue.toLocaleString()}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${row.avg_score.toFixed(1)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-green-600">$${row.total_revenue ? row.total_revenue.toLocaleString() : '0'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${row.avg_score ? row.avg_score.toFixed(1) : '0.0'}</td>
                 </tr>
             `).join('');
             document.getElementById('kpiTableBody').innerHTML = kpiHtml;
