@@ -2,6 +2,7 @@ import shutil
 import os
 import sys
 import pandas as pd
+import numpy as np
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -90,10 +91,41 @@ async def upload_file(file: UploadFile = File(...)):
             count=('id', 'count')
         ).reset_index()
         
+        # --- FIX: Robust serialization handling ---
+        # 1. Replace Infinite values with None
+        # 2. Replace NaN values with None
+        # 3. Replace NaT (Time) values with None
+        # 4. Convert Timestamp objects to strings
+        
+        def clean_for_json(data_frame):
+            # Create a copy to avoid SettingWithCopy warnings
+            df_out = data_frame.copy()
+            
+            # Convert datetime objects to strings (ISO format)
+            # This handles the "Object of type Timestamp is not JSON serializable" error
+            for col in df_out.columns:
+                if pd.api.types.is_datetime64_any_dtype(df_out[col]):
+                    # Convert to string, replacing NaT with the string "NaT" first
+                    df_out[col] = df_out[col].astype(str)
+                    # Now replace the string "NaT" with None
+                    df_out[col] = df_out[col].replace({'NaT': None, 'nan': None})
+
+            # Replace Infinity
+            df_out.replace([np.inf, -np.inf], None, inplace=True)
+            
+            # Replace NaN and NaT (for non-datetime columns)
+            # Note: where(pd.notnull(df_out), None) replaces NaN/NaT with None
+            df_out = df_out.where(pd.notnull(df_out), None)
+            
+            return df_out
+
+        df_clean = clean_for_json(df)
+        summary_clean = clean_for_json(summary)
+        
         # Convert to dictionary for JSON response
         pipeline_stats = pm.metrics
-        kpi_data = summary.to_dict(orient='records')
-        sample_data = df.head(10).to_dict(orient='records') # Send top 10 rows for preview
+        kpi_data = summary_clean.to_dict(orient='records')
+        sample_data = df_clean.head(10).to_dict(orient='records') # Send top 10 rows for preview
 
         return JSONResponse(content={
             "status": "success",
@@ -104,7 +136,14 @@ async def upload_file(file: UploadFile = File(...)):
         })
 
     except Exception as e:
-        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+        # Print the full error to the terminal for debugging
+        print(f"ERROR: {str(e)}")
+        # Return a 200 OK with error status so frontend can display the message cleanly
+        # instead of a generic 500 browser error.
+        return JSONResponse(content={
+            "status": "error", 
+            "message": f"Server Error: {str(e)}"
+        })
 
 if __name__ == "__main__":
     import uvicorn

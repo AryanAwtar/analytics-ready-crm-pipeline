@@ -104,14 +104,11 @@
             } catch (error) {
                 console.warn('Backend connection failed:', error);
                 
-                // Fallback Logic: Check if we are in a secure/preview environment which often blocks localhost
-                const isSecureContext = window.location.protocol === 'https:' || window.location.protocol.includes('blob');
+                // User-friendly fallback: Offer demo data if backend is unreachable
+                const useDemo = confirm(`⚠️ Connection Failed\n\nCould not reach the backend at ${API_URL}.\n\nWould you like to load DEMO DATA to see how the dashboard works?`);
                 
-                if (isSecureContext) {
-                    alert("⚠️ PREVIEW MODE: Cannot connect to local backend from this secure preview.\n\nShowing DEMO DATA instead to demonstrate functionality.\n\nTo run the actual pipeline:\n1. Ensure 'python src/api.py' is running\n2. Open this 'frontend/index.html' file directly in your browser (file://)");
+                if (useDemo) {
                     displayResults(getMockData());
-                } else {
-                    alert(`Failed to connect to backend at ${API_URL}.\n\nPlease ensure 'python src/api.py' is running in your terminal.`);
                 }
             } finally {
                 document.getElementById('uploadBtn').disabled = false;
